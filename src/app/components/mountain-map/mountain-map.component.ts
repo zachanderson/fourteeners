@@ -3,8 +3,8 @@ import {Map, View} from 'ol';
 import TileLayer from 'ol/layer/Tile';
 import OSM from 'ol/source/OSM';
 import { tap, filter } from 'rxjs/operators';
-import { IMountain } from 'src/app/interfaces/mountain';
-import { MountainService } from 'src/app/services/mountain.service';
+import { IMountain } from '../../interfaces/mountain';
+import { MountainService } from '../../services/mountain.service';
 
 @Component({
   selector: 'app-mountain-map',
