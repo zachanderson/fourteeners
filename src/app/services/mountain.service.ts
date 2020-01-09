@@ -14,7 +14,8 @@ constructor(private httpClient: HttpClient) { }
 
   async getAll():Promise<IMountain[]>{
       return await this.httpClient.get<IMountain[]>('/assets/data/fourteeners.json').toPromise()
-      .then((data:IMountain[]) => this.models = data);    
+      .then((data:IMountain[]) => this.models = data
+      .sort((a,b)=> a.Mountain_Peak.toString().localeCompare(b.Mountain_Peak.toString()) ));    
   }
 
   // async getByPage(page: number){

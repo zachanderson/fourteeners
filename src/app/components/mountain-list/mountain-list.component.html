@@ -3,6 +3,7 @@
         <a class="nav-link" href="#" (click)="mountainService.activeModel$.next(mountain)" [class.active]="mountain === currentMountain" >
             {{mountain.Mountain_Peak}}
             <small>Elevation:  {{mountain.Elevation_ft}}</small>
+            <small>{{mountain.Difficulty}}</small>
         </a>
         
     </li>
