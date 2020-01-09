@@ -5,6 +5,10 @@ import OSM from 'ol/source/OSM';
 import { tap, filter } from 'rxjs/operators';
 import { IMountain } from '../../interfaces/mountain';
 import { MountainService } from '../../services/mountain.service';
+import {fromLonLat} from 'ol/proj';
+import {Fill, RegularShape, Stroke, Style} from 'ol/style';
+import Draw from 'ol/interaction/Draw';
+import {Vector as VectorSource} from 'ol/source';
 
 @Component({
   selector: 'app-mountain-map',
@@ -15,15 +19,19 @@ export class MountainMapComponent implements OnInit, AfterViewInit {
 lat:number;
 long:number;
 
+private map: Map;
+private view: View;
+private star: Style;
+draw: Draw;
+source: VectorSource;
+
   constructor(private mountainService: MountainService) { 
 
     this.mountainService.activeModel$    
     .pipe(
       filter(mtn=> !!mtn),
-      tap((mtn:IMountain) => {
-        this.lat = mtn.Lat;
-        this.long = mtn.Long;
-      })
+      filter(am => !!am),
+      tap(am => this.flyTo(fromLonLat([am.Long, am.Lat])))
     ).subscribe();
 
   }
@@ -32,48 +40,49 @@ long:number;
   }
 
   ngAfterViewInit(): void {
-    const map = new Map({
+    this.source = new VectorSource({wrapX: false});
+    this.view = new View({
+      center: fromLonLat([-105.718758, 39.099594]),
+      zoom: 7
+    });
+    this.map = new Map({
       target: 'mapdiv',
       layers: [
         new TileLayer({
           source: new OSM()
         })
       ],
-      view: new View({
-        center: [0, 0],
-        zoom: 2
-      })
+      view: this.view
     });
   }
 
+  private flyTo(location, done?) {
+    let duration = 5000;
+    let zoom = 13;
+    let parts = 2;
+    let called = false;
+    function callback(complete) {
+      --parts;
+      if (called) {
+        return;
+      }
+      if (parts === 0 || !complete) {
+        called = true;
+        done && done(complete);
+      }
+    }
+    this.view.animate({
+      center: location,
+      duration
+    }, callback);
+    this.view.animate({
+      zoom: zoom - 6,
+      duration: duration / 2
+    }, {
+      zoom,
+      duration: duration / 2
+    }, callback);
+  }
 
-
-  //  flyTo(location, done) {
-  //   var duration = 2000;
-  //   var zoom = view.getZoom();
-  //   var parts = 2;
-  //   var called = false;
-  //   function callback(complete) {
-  //     --parts;
-  //     if (called) {
-  //       return;
-  //     }
-  //     if (parts === 0 || !complete) {
-  //       called = true;
-  //       done(complete);
-  //     }
-  //   }
-  //   view.animate({
-  //     center: location,
-  //     duration: duration
-  //   }, callback);
-  //   view.animate({
-  //     zoom: zoom - 1,
-  //     duration: duration / 2
-  //   }, {
-  //     zoom: zoom,
-  //     duration: duration / 2
-  //   }, callback);
-  // }
-
+  
 }
